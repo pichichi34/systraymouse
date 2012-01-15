@@ -7,41 +7,31 @@
 QT_BEGIN_NAMESPACE
 class QAction;
 class QCheckBox;
-class QComboBox;
 class QGroupBox;
 class QLabel;
-class QLineEdit;
 class QMenu;
 class QPushButton;
-class QSpinBox;
-class QTextEdit;
 QT_END_NAMESPACE
 
 //! [0]
-class Window : public QDialog
+class MainWindow : public QDialog
 {
     Q_OBJECT
 
 public:
-    Window();
+    MainWindow();
 
     void setVisible(bool visible);
 
 protected:
     void closeEvent(QCloseEvent *event);
-#if defined(Q_WS_X11)
-    bool eventFilter(QObject *object, QEvent *event);
-#endif
+    void setIcon();
 
 private slots:
-    void setIcon(int index);
+    void programDevice();
     void iconActivated(QSystemTrayIcon::ActivationReason reason);
-    void showMessage();
-    void messageClicked();
-
 private:
-    void createIconGroupBox();
-    void createMessageGroupBox();
+    void createGroupBox();
     void createActions();
     void createTrayIcon();
 
@@ -49,11 +39,11 @@ private:
     QCheckBox *jitToolTipCheckBox;
 #endif
 
-    QGroupBox *messageGroupBox;
+    QGroupBox *groupBox;
     QLabel *delayLabel;
     QLabel *sensitivityLabel;
     QPushButton *programDeviceButton;
-
+    QCheckBox *showIconCheckBox;
     QAction *minimizeAction;
     QAction *maximizeAction;
     QAction *restoreAction;

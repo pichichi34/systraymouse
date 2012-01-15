@@ -3,33 +3,32 @@
 #include "mainwindow.h"
 
 //! [0]
-Window::Window()
+MainWindow::MainWindow()
 {
-
-    createMessageGroupBox();
-
-
+    createGroupBox();
     createActions();
     createTrayIcon();
-
+    setIcon();
+    connect(showIconCheckBox, SIGNAL(toggled(bool)),trayIcon, SLOT(setVisible(bool)));
     connect(programDeviceButton, SIGNAL(clicked()), this, SLOT(programDevice()));
-    connect(trayIcon, SIGNAL(messageClicked()), this, SLOT(messageClicked()));
     connect(trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)),
             this, SLOT(iconActivated(QSystemTrayIcon::ActivationReason)));
 
-    QVBoxLayout *mainLayout = new QVBoxLayout;
-    mainLayout->addWidget(messageGroupBox);
+    QHBoxLayout *mainLayout = new QHBoxLayout;
+    mainLayout->addWidget(groupBox);
+
     setLayout(mainLayout);
+
 
     trayIcon->show();
 
     setWindowTitle(tr("Systraymouse"));
-    resize(400, 300);
+    setFixedSize(300,200);
 }
 //! [0]
 
 //! [1]
-void Window::setVisible(bool visible)
+void MainWindow::setVisible(bool visible)
 {
     minimizeAction->setEnabled(visible);
     maximizeAction->setEnabled(!isMaximized());
@@ -39,7 +38,7 @@ void Window::setVisible(bool visible)
 //! [1]
 
 //! [2]
-void Window::closeEvent(QCloseEvent *event)
+void MainWindow::closeEvent(QCloseEvent *event)
 {
     if (trayIcon->isVisible()) {
         QMessageBox::information(this, tr("Systraymouse"),
@@ -54,74 +53,79 @@ void Window::closeEvent(QCloseEvent *event)
 //! [2]
 
 //! [3]
-void Window::setIcon(int index)
+void MainWindow::setIcon()
 {
-    QIcon icon("bad.svg");
+    QIcon icon(":/images/Computer_mouse.svg");
     trayIcon->setIcon(icon);
     setWindowIcon(icon);
+
+    trayIcon->setToolTip("mouse");
 }
 //! [3]
 
-//! [4]
-void Window::iconActivated(QSystemTrayIcon::ActivationReason reason)
+void MainWindow::iconActivated(QSystemTrayIcon::ActivationReason reason)
 {
     switch (reason) {
-    case QSystemTrayIcon::Trigger:
+    case QSystemTrayIcon::Trigger:{
+        if(!isVisible()){
+        showNormal();
+        }else
+        hide();
+        break;
+    }
+    case QSystemTrayIcon::DoubleClick:
+        break;
     case QSystemTrayIcon::MiddleClick:
-        showMessage();
+        //showMessage();
         break;
     default:
         ;
     }
 }
-//! [4]
-
 //! [5]
-void Window::showMessage()
+void MainWindow::programDevice()
 {
-    QSystemTrayIcon::MessageIcon icon = QSystemTrayIcon::MessageIcon(
-            typeComboBox->itemData(typeComboBox->currentIndex()).toInt());
-    trayIcon->showMessage(titleEdit->text(), bodyEdit->toPlainText(), icon,
-                          durationSpinBox->value() * 1000);
+
 }
 //! [5]
 
-//! [6]
-void Window::messageClicked()
+
+
+
+void MainWindow::createGroupBox()
 {
-    QMessageBox::information(0, tr("Systray"),
-                             tr("Sorry, I already gave what help I could.\n"
-                                "Maybe you should try asking a human?"));
-}
-//! [6]
+    groupBox = new QGroupBox(tr("Mouse performence"));
 
-void Window::createIconGroupBox()
-{
-    iconGroupBox = new QGroupBox(tr("Tray Icon"));
+    QHBoxLayout *layout = new QHBoxLayout;
 
+    QVBoxLayout *sensLayout = new QVBoxLayout;
+    QLabel *sensLabel = new QLabel("sensivity");
+    QSlider *sensSlider= new QSlider();
+    sensLayout->addWidget(sensLabel);
+    sensLayout->addWidget(sensSlider);
+    layout->addLayout(sensLayout);
 
-    iconComboBox = new QComboBox;
-    iconComboBox->addItem(QIcon(":/images/bad.svg"), tr("Bad"));
+    QVBoxLayout *delayLayout = new QVBoxLayout;
+    QLabel *delayLabel = new QLabel("delay");
+    QSlider *delaySlider= new QSlider();
+    delayLayout->addWidget(delayLabel);
+    delayLayout->addWidget(delaySlider);
+    layout->addLayout(delayLayout);
+
+    QVBoxLayout *otherLayout = new QVBoxLayout;
     showIconCheckBox = new QCheckBox(tr("Show icon"));
     showIconCheckBox->setChecked(true);
+    programDeviceButton= new QPushButton("&Go");
+    otherLayout->addWidget(showIconCheckBox);
+    otherLayout->addWidget(programDeviceButton);
+    layout->addLayout(otherLayout);
 
-#if defined(Q_WS_X11)
-    jitToolTipCheckBox = new QCheckBox(tr("Just In Time Tooltip"));
-#endif
+    groupBox->setLayout(layout);
 
-    QHBoxLayout *iconLayout = new QHBoxLayout;
-    iconLayout->addWidget(iconLabel);
-    iconLayout->addWidget(iconComboBox);
-    iconLayout->addStretch();
-    iconLayout->addWidget(showIconCheckBox);
-#if defined(Q_WS_X11)
-    iconLayout->addWidget(jitToolTipCheckBox);
-#endif
-    iconGroupBox->setLayout(iconLayout);
 }
 
 
-void Window::createActions()
+void MainWindow::createActions()
 {
     minimizeAction = new QAction(tr("Mi&nimize"), this);
     connect(minimizeAction, SIGNAL(triggered()), this, SLOT(hide()));
@@ -136,7 +140,7 @@ void Window::createActions()
     connect(quitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
 }
 
-void Window::createTrayIcon()
+void MainWindow::createTrayIcon()
 {
     trayIconMenu = new QMenu(this);
     trayIconMenu->addAction(minimizeAction);
@@ -146,37 +150,8 @@ void Window::createTrayIcon()
     trayIconMenu->addAction(quitAction);
 
     trayIcon = new QSystemTrayIcon(this);
-    QByteArray category = qgetenv("SNI_CATEGORY");
-    if (!category.isEmpty()) {
-        trayIcon->setProperty("_qt_sni_category", QString::fromLocal8Bit(category));
-    }
     trayIcon->setContextMenu(trayIconMenu);
 
-#if defined(Q_WS_X11)
-    trayIcon->installEventFilter(this);
-#endif
+
 }
 
-#if defined(Q_WS_X11)
-bool Window::eventFilter(QObject *, QEvent *event)
-{
-    switch(event->type()) {
-    case QEvent::ToolTip:
-        if (jitToolTipCheckBox->isChecked()) {
-            QString timeString = QTime::currentTime().toString();
-            trayIcon->setToolTip(tr("Current Time: %1").arg(timeString));
-        }
-        break;
-    case QEvent::Wheel: {
-        QWheelEvent *wheelEvent = static_cast<QWheelEvent*>(event);
-        int delta = wheelEvent->delta() > 0 ? 1 : -1;
-        int index = (iconComboBox->currentIndex() + delta) % iconComboBox->count();
-        iconComboBox->setCurrentIndex(index);
-        break;
-    }
-    default:
-        break;
-    }
-    return false;
-}
-#endif
