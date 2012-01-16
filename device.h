@@ -1,8 +1,10 @@
 #ifndef DEVICE_H
 #define DEVICE_H
 
-#define VENDOR_ID 0x0925
-#define PRODUCT_ID 0x7001
+#include <libusb-1.0/libusb.h>
+
+#define VENDOR_ID 0x0483
+#define PRODUCT_ID 0x5758
 
 // HID Class-Specific Requests values. See section 7.2 of the HID specifications
 #define HID_GET_REPORT                0x01
@@ -21,28 +23,25 @@
 
 class Device
 {
-
+    const static int INTERFACE_NUMBER = 0;
     const static int PACKET_CTRL_LEN=2;
     const static int PACKET_INT_LEN=2;
     const static int INTERFACE=0;
-    const static int ENDPOINT_INT_IN=0x81; /* endpoint 0x81 address for IN */
     const static int ENDPOINT_INT_OUT=0x01; /* endpoint 1 address for OUT */
-    const static int TIMEOUT=5000; /* timeout in ms */
-    static int result = 1;
-    static struct libusb_device_handle *devh = NULL;
-    static int test_interrupt_transfer();
-    static int test_control_transfer_in_out();
-    static int test_control_transfer();
-    void bad(const char *why);
-    static int find_lvr_hidusb();
-
-
+    const static int TIMEOUT=1000; /* timeout in ms */
+    int result;
+    struct libusb_device_handle *devh;
+    unsigned char massage[PACKET_INT_LEN];
+    int interrapt_transfer_out();
+    int find_lvr_hidusb();
+    void config();
+    void close();
+    void init();
 
 public:
     Device();
-    void init();
-    void config();
-    void close();
+    void program(int,int);
 };
 
 #endif // DEVICE_H
+

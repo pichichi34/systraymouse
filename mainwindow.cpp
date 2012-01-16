@@ -9,11 +9,9 @@ MainWindow::MainWindow()
     createActions();
     createTrayIcon();
     setIcon();
-    connect(showIconCheckBox, SIGNAL(toggled(bool)),trayIcon, SLOT(setVisible(bool)));
     connect(programDeviceButton, SIGNAL(clicked()), this, SLOT(programDevice()));
     connect(trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)),
             this, SLOT(iconActivated(QSystemTrayIcon::ActivationReason)));
-
     QHBoxLayout *mainLayout = new QHBoxLayout;
     mainLayout->addWidget(groupBox);
 
@@ -24,6 +22,8 @@ MainWindow::MainWindow()
 
     setWindowTitle(tr("Systraymouse"));
     setFixedSize(300,200);
+
+    stm32=new Device();
 }
 //! [0]
 
@@ -31,7 +31,7 @@ MainWindow::MainWindow()
 void MainWindow::setVisible(bool visible)
 {
     minimizeAction->setEnabled(visible);
-    maximizeAction->setEnabled(!isMaximized());
+    //maximizeAction->setEnabled(!isMaximized());
     restoreAction->setEnabled(isMaximized() || !visible);
     QDialog::setVisible(visible);
 }
@@ -82,12 +82,15 @@ void MainWindow::iconActivated(QSystemTrayIcon::ActivationReason reason)
         ;
     }
 }
-//! [5]
+
 void MainWindow::programDevice()
 {
 
+    int sens=sensSlider->value();
+    int delay=delaySlider->value();
+    stm32->program(sens,delay);
 }
-//! [5]
+
 
 
 
@@ -100,23 +103,21 @@ void MainWindow::createGroupBox()
 
     QVBoxLayout *sensLayout = new QVBoxLayout;
     QLabel *sensLabel = new QLabel("sensivity");
-    QSlider *sensSlider= new QSlider();
+    sensSlider= new QSlider();
     sensLayout->addWidget(sensLabel);
     sensLayout->addWidget(sensSlider);
     layout->addLayout(sensLayout);
 
     QVBoxLayout *delayLayout = new QVBoxLayout;
     QLabel *delayLabel = new QLabel("delay");
-    QSlider *delaySlider= new QSlider();
+    delaySlider= new QSlider();
     delayLayout->addWidget(delayLabel);
     delayLayout->addWidget(delaySlider);
     layout->addLayout(delayLayout);
 
     QVBoxLayout *otherLayout = new QVBoxLayout;
-    showIconCheckBox = new QCheckBox(tr("Show icon"));
-    showIconCheckBox->setChecked(true);
     programDeviceButton= new QPushButton("&Go");
-    otherLayout->addWidget(showIconCheckBox);
+
     otherLayout->addWidget(programDeviceButton);
     layout->addLayout(otherLayout);
 
@@ -130,8 +131,8 @@ void MainWindow::createActions()
     minimizeAction = new QAction(tr("Mi&nimize"), this);
     connect(minimizeAction, SIGNAL(triggered()), this, SLOT(hide()));
 
-    maximizeAction = new QAction(tr("Ma&ximize"), this);
-    connect(maximizeAction, SIGNAL(triggered()), this, SLOT(showMaximized()));
+    //maximizeAction = new QAction(tr("Ma&ximize"), this);
+    //connect(maximizeAction, SIGNAL(triggered()), this, SLOT(showMaximized()));
 
     restoreAction = new QAction(tr("&Restore"), this);
     connect(restoreAction, SIGNAL(triggered()), this, SLOT(showNormal()));
@@ -144,7 +145,6 @@ void MainWindow::createTrayIcon()
 {
     trayIconMenu = new QMenu(this);
     trayIconMenu->addAction(minimizeAction);
-    trayIconMenu->addAction(maximizeAction);
     trayIconMenu->addAction(restoreAction);
     trayIconMenu->addSeparator();
     trayIconMenu->addAction(quitAction);

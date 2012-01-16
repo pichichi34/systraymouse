@@ -16,7 +16,7 @@ SOURCES += main.cpp\
 
 HEADERS  += mainwindow.h \
     device.h
-
+LIBS +=-lusb-1.0
 FORMS    += mainwindow.ui
 
 RESOURCES     = systraymouse.qrc \

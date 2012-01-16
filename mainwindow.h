@@ -4,6 +4,8 @@
 #include <QSystemTrayIcon>
 #include <QDialog>
 
+#include <device.h>
+
 QT_BEGIN_NAMESPACE
 class QAction;
 class QCheckBox;
@@ -11,6 +13,7 @@ class QGroupBox;
 class QLabel;
 class QMenu;
 class QPushButton;
+class QSlider;
 QT_END_NAMESPACE
 
 //! [0]
@@ -38,19 +41,22 @@ private:
 #if defined(Q_WS_X11)
     QCheckBox *jitToolTipCheckBox;
 #endif
-
+    QSlider *sensSlider;
+    QSlider *delaySlider;
     QGroupBox *groupBox;
     QLabel *delayLabel;
     QLabel *sensitivityLabel;
     QPushButton *programDeviceButton;
     QCheckBox *showIconCheckBox;
     QAction *minimizeAction;
-    QAction *maximizeAction;
+    //QAction *maximizeAction;
     QAction *restoreAction;
     QAction *quitAction;
 
     QSystemTrayIcon *trayIcon;
     QMenu *trayIconMenu;
+
+    Device* stm32;
 };
 //! [0]
 
