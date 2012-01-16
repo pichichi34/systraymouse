@@ -1,33 +1,28 @@
 #include <QtGui>
-
 #include "mainwindow.h"
 
-//! [0]
 MainWindow::MainWindow()
 {
     createGroupBox();
     createActions();
     createTrayIcon();
     setIcon();
+
     connect(programDeviceButton, SIGNAL(clicked()), this, SLOT(programDevice()));
     connect(trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)),
             this, SLOT(iconActivated(QSystemTrayIcon::ActivationReason)));
+
     QHBoxLayout *mainLayout = new QHBoxLayout;
     mainLayout->addWidget(groupBox);
-
     setLayout(mainLayout);
-
-
     trayIcon->show();
 
     setWindowTitle(tr("Systraymouse"));
-    setFixedSize(300,200);
+    setFixedSize(250,200);
 
     stm32=new Device();
 }
-//! [0]
 
-//! [1]
 void MainWindow::setVisible(bool visible)
 {
     minimizeAction->setEnabled(visible);
@@ -35,33 +30,29 @@ void MainWindow::setVisible(bool visible)
     restoreAction->setEnabled(isMaximized() || !visible);
     QDialog::setVisible(visible);
 }
-//! [1]
 
-//! [2]
 void MainWindow::closeEvent(QCloseEvent *event)
 {
     if (trayIcon->isVisible()) {
         QMessageBox::information(this, tr("Systraymouse"),
-                                 tr("The program will keep running in the "
-                                    "system tray. To terminate the program, "
-                                    "choose <b>Quit</b> in the context menu "
-                                    "of the system tray entry."));
+                                 tr("Program zostaje zminimalizowany do  "
+                                    "system tray'a. Aby zakończyć program, "
+                                    "wybierz <b>Quit</b> z menu kontektowego "
+                                    "aplikacji w tray'u."));
         hide();
         event->ignore();
     }
 }
-//! [2]
 
-//! [3]
 void MainWindow::setIcon()
 {
     QIcon icon(":/images/Computer_mouse.svg");
     trayIcon->setIcon(icon);
     setWindowIcon(icon);
 
-    trayIcon->setToolTip("mouse");
+    trayIcon->setToolTip("Systraymouse");
 }
-//! [3]
+
 
 void MainWindow::iconActivated(QSystemTrayIcon::ActivationReason reason)
 {
@@ -76,7 +67,6 @@ void MainWindow::iconActivated(QSystemTrayIcon::ActivationReason reason)
     case QSystemTrayIcon::DoubleClick:
         break;
     case QSystemTrayIcon::MiddleClick:
-        //showMessage();
         break;
     default:
         ;
@@ -90,10 +80,6 @@ void MainWindow::programDevice()
     int delay=delaySlider->value();
     stm32->program(sens,delay);
 }
-
-
-
-
 
 void MainWindow::createGroupBox()
 {
@@ -122,17 +108,12 @@ void MainWindow::createGroupBox()
     layout->addLayout(otherLayout);
 
     groupBox->setLayout(layout);
-
 }
-
 
 void MainWindow::createActions()
 {
     minimizeAction = new QAction(tr("Mi&nimize"), this);
     connect(minimizeAction, SIGNAL(triggered()), this, SLOT(hide()));
-
-    //maximizeAction = new QAction(tr("Ma&ximize"), this);
-    //connect(maximizeAction, SIGNAL(triggered()), this, SLOT(showMaximized()));
 
     restoreAction = new QAction(tr("&Restore"), this);
     connect(restoreAction, SIGNAL(triggered()), this, SLOT(showNormal()));
@@ -151,7 +132,5 @@ void MainWindow::createTrayIcon()
 
     trayIcon = new QSystemTrayIcon(this);
     trayIcon->setContextMenu(trayIconMenu);
-
-
 }
 

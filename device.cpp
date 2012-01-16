@@ -1,6 +1,5 @@
 #include "device.h"
 #include <QDebug>
-#include <QString>
 
 Device::Device()
 {
@@ -19,7 +18,6 @@ int Device::interrapt_transfer_out()
 {
        int r,transferred;
     r=libusb_interrupt_transfer(devh, ENDPOINT_INT_OUT, massage, PACKET_INT_LEN,&transferred,TIMEOUT);
-   // r = libusb_control_transfer(devh,CTRL_OUT,HID_SET_REPORT,(HID_REPORT_TYPE_OUTPUT<<8)|0x00, 0,massage, PACKET_INT_LEN,TIMEOUT);
     if (r < 0) {
         qDebug("Control Out error %d\n"+r);
         return r;
